@@ -100,7 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shopping Store'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        elevation: 0,
+        scrolledUnderElevation: 2,
         actions: [
           // Wishlist Icon
           Consumer<WishlistProvider>(
@@ -108,7 +109,10 @@ class _HomeScreenState extends State<HomeScreen> {
               return Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.favorite),
+                    icon: const Icon(Icons.favorite_outline_rounded),
+                    style: IconButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => const WishlistScreen()),
@@ -122,18 +126,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
+                          color: Theme.of(context).colorScheme.error,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
+                          minWidth: 18,
+                          minHeight: 18,
                         ),
                         child: Text(
                           '${wishlistProvider.itemCount}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -149,7 +154,10 @@ class _HomeScreenState extends State<HomeScreen> {
               return Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.shopping_cart),
+                    icon: const Icon(Icons.shopping_bag_outlined),
+                    style: IconButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => const CartScreen()),
@@ -163,18 +171,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
+                          color: Theme.of(context).colorScheme.error,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
+                          minWidth: 18,
+                          minHeight: 18,
                         ),
                         child: Text(
                           '${cartProvider.itemCount}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -186,47 +195,122 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Logout Icon
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
+            style: IconButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
             onPressed: _logout,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search and Filter Section
+          // Header and Search Section
           Container(
-            padding: const EdgeInsets.all(16),
+            color: Colors.transparent,
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Search Bar
-                TextField(
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'Search products...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                Text(
+                  'Discover',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onBackground,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                // Search & actions row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05), 
+                              blurRadius: 10, 
+                              spreadRadius: 0,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          onChanged: _onSearchChanged,
+                          decoration: InputDecoration(
+                            hintText: 'Search products...',
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              fontSize: 14,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Theme.of(context).colorScheme.surface,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Quick filter button with modern styling
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {},
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.tune_rounded, 
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 22,
+                            ),)
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
                 // Category Filter
                 SizedBox(
-                  height: 40,
+                  height: 48,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _categories.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     itemBuilder: (context, index) {
                       final category = _categories[index];
                       final isSelected = category == _selectedCategory;
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
                           label: Text(
                             category.toUpperCase(),
                             style: TextStyle(
-                              color: isSelected ? Colors.white : null,
-                              fontWeight: FontWeight.bold,
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.onPrimary 
+                                  : Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
                             ),
                           ),
                           selected: isSelected,
@@ -235,8 +319,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               _onCategoryChanged(category);
                             }
                           },
-                          backgroundColor: Colors.grey.shade200,
-                          selectedColor: Theme.of(context).primaryColor,
+                          selectedColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: isSelected ? 2 : 0,
+                          shadowColor: isSelected 
+                              ? Theme.of(context).colorScheme.primary.withOpacity(0.3) 
+                              : Colors.transparent,
                         ),
                       );
                     },
@@ -255,25 +347,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Colors.grey.shade400,
+                              Icons.error_outline_rounded,
+                              size: 80,
+                              color: Theme.of(context).colorScheme.error.withOpacity(0.7),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
                             Text(
                               'Failed to load products',
-                              style: Theme.of(context).textTheme.titleLarge,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onBackground,
+                              ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             Text(
                               _error!,
                               style: Theme.of(context).textTheme.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
+                            const SizedBox(height: 18),
+                            ElevatedButton.icon(
                               onPressed: _loadData,
-                              child: const Text('Retry'),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Retry'),
                             ),
                           ],
                         ),
@@ -285,15 +381,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Icon(
                                   Icons.search_off,
-                                  size: 64,
+                                  size: 72,
                                   color: Colors.grey.shade400,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 18),
                                 Text(
                                   'No products found',
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 const Text('Try adjusting your search or filters'),
                               ],
                             ),
@@ -301,12 +397,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         : RefreshIndicator(
                             onRefresh: _loadData,
                             child: GridView.builder(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                childAspectRatio: 0.7,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
+                                childAspectRatio: 0.68,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
                               ),
                               itemCount: _filteredProducts.length,
                               itemBuilder: (context, index) {
