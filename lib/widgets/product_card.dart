@@ -5,36 +5,80 @@ import '../providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../screens/product_detail_screen.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Product product;
 
   const ProductCard({super.key, required this.product});
+
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  bool _isPressed = false;
+
+  void _setPressed(bool pressed) {
+    if (_isPressed == pressed) return;
+    setState(() => _isPressed = pressed);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      shadowColor: Colors.black.withOpacity(0.05),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.grey.shade200, width: 0.5),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _navigateToProductDetail(context),
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return AnimatedScale(
+      scale: _isPressed ? 0.985 : 1.0,
+      duration: const Duration(milliseconds: 110),
+      curve: Curves.easeOut,
+      child: Card(
+        elevation: 2,
+        shadowColor: Colors.black.withOpacity(0.08),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.grey.shade200, width: 0.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
           children: [
-            // Image Section
-            _buildImageSection(context, colorScheme),
+            // Decorative diagonal tag to give a unique look
+            Positioned(
+              top: -10,
+              left: -30,
+              child: Transform.rotate(
+                angle: -0.5,
+                child: Container(
+                  width: 120,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [colorScheme.primary.withOpacity(0.16), colorScheme.secondary.withOpacity(0.14)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
 
-            // Flexible Details Section
-            Flexible(
-              child: _buildProductDetails(context, theme),
+            // Main tappable area
+            InkWell(
+              onTap: () => _navigateToProductDetail(context),
+              onTapDown: (_) => _setPressed(true),
+              onTapCancel: () => _setPressed(false),
+              onTapUp: (_) => _setPressed(false),
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image Section
+                  _buildImageSection(context, colorScheme),
+
+                  // Flexible Details Section
+                  Flexible(
+                    child: _buildProductDetails(context, theme),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -50,11 +94,17 @@ class ProductCard extends StatelessWidget {
           // Product Image
           Positioned.fill(
             child: Hero(
-              tag: 'product_${product.id}_image',
+              tag: 'product_${widget.product.id}_image',
               child: Container(
-                color: colorScheme.surface,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colorScheme.surface, colorScheme.surfaceVariant.withOpacity(0.6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: Image.network(
-                  product.image,
+                  widget.product.image,
                   fit: BoxFit.contain,
                   loadingBuilder: _buildImageLoadingWidget,
                   errorBuilder: _buildImageErrorWidget,
@@ -100,7 +150,7 @@ class ProductCard extends StatelessWidget {
 
                   // Product title with modern typography (smaller in compact)
                   Text(
-                    product.title,
+                    widget.product.title,
                     style: (compact
                             ? theme.textTheme.bodySmall
                             : theme.textTheme.titleSmall)
@@ -122,7 +172,7 @@ class ProductCard extends StatelessWidget {
                     children: [
                       // Price with modern typography
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        '\$${widget.product.price.toStringAsFixed(2)}',
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -158,7 +208,7 @@ class ProductCard extends StatelessWidget {
     
     return Consumer<WishlistProvider>(
       builder: (context, wishlistProvider, _) {
-        final isInWishlist = wishlistProvider.isInWishlist(product.id);
+  final isInWishlist = wishlistProvider.isInWishlist(widget.product.id);
 
         return Material(
           color: Colors.transparent,
@@ -170,8 +220,8 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isInWishlist 
-                    ? theme.colorScheme.primaryContainer.withOpacity(0.9)
-                    : Colors.white.withOpacity(0.9),
+                    ? theme.colorScheme.secondary.withOpacity(0.12)
+                    : Colors.white.withOpacity(0.92),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -186,7 +236,7 @@ class ProductCard extends StatelessWidget {
                 child: Icon(
                   isInWishlist ? Icons.favorite : Icons.favorite_border,
                   key: ValueKey(isInWishlist),
-                  color: isInWishlist ? Colors.red : Colors.grey.shade600,
+                  color: isInWishlist ? theme.colorScheme.secondary : Colors.grey.shade600,
                   size: 20,
                 ),
               ),
@@ -202,7 +252,7 @@ class ProductCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
       decoration: BoxDecoration(
         color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.amber.shade200, width: 0.5),
       ),
       child: Row(
@@ -215,7 +265,7 @@ class ProductCard extends StatelessWidget {
           ),
           const SizedBox(width: 1),
           Text(
-            product.rating.rate.toStringAsFixed(1),
+            widget.product.rating.rate.toStringAsFixed(1),
             style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.w600,
@@ -233,8 +283,8 @@ class ProductCard extends StatelessWidget {
     
     return Consumer<CartProvider>(
       builder: (context, cartProvider, _) {
-        final isInCart = cartProvider.isInCart(product.id);
-        final quantity = cartProvider.getQuantity(product.id);
+  final isInCart = cartProvider.isInCart(widget.product.id);
+  final quantity = cartProvider.getQuantity(widget.product.id);
 
         return ElevatedButton(
           onPressed: () => _addToCart(context, cartProvider),
@@ -318,21 +368,21 @@ class ProductCard extends StatelessWidget {
   void _navigateToProductDetail(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(product: product),
+  builder: (context) => ProductDetailScreen(product: widget.product),
       ),
     );
   }
 
   void _toggleWishlist(
       BuildContext context, WishlistProvider wishlistProvider, bool wasInWishlist) {
-    wishlistProvider.toggleWishlist(product);
+  wishlistProvider.toggleWishlist(widget.product);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           wasInWishlist
-              ? '${product.title} removed from wishlist'
-              : '${product.title} added to wishlist',
+              ? '${widget.product.title} removed from wishlist'
+              : '${widget.product.title} added to wishlist',
         ),
         duration: const Duration(milliseconds: 1500),
         behavior: SnackBarBehavior.floating,
@@ -344,7 +394,7 @@ class ProductCard extends StatelessWidget {
   }
 
   void _addToCart(BuildContext context, CartProvider cartProvider) {
-    cartProvider.addItem(product);
+  cartProvider.addItem(widget.product);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -357,7 +407,7 @@ class ProductCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('${product.title} added to cart'),
+              child: Text('${widget.product.title} added to cart'),
             ),
           ],
         ),
