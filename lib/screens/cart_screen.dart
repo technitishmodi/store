@@ -98,7 +98,7 @@ class CartScreen extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: const Color.fromRGBO(128, 128, 128, 0.2),
                       spreadRadius: 1,
                       blurRadius: 5,
                       offset: const Offset(0, -2),
@@ -267,7 +267,7 @@ class CartItemCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 8),
                       // Total Price
                       Text(
                         '\$${cartItem.totalPrice.toStringAsFixed(2)}',

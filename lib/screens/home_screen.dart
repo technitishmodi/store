@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _error = null;
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final products = await ApiService.fetchProducts();
       final categories = await ApiService.fetchCategories();
 
+      if (!mounted) return;
       setState(() {
         _products = products;
         _filteredProducts = products;
@@ -51,10 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       // Load wishlist from SharedPreferences
-      if (mounted) {
-        await Provider.of<WishlistProvider>(context, listen: false).loadWishlist();
-      }
+      await Provider.of<WishlistProvider>(context, listen: false).loadWishlist();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;

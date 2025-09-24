@@ -89,10 +89,19 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+            // Wrap the form contents in a scrollable container so the
+            // layout doesn't overflow when the keyboard is visible.
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.vertical,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                 // App Logo/Title
                 Icon(
                   Icons.shopping_bag,
@@ -195,7 +204,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),

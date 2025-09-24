@@ -154,7 +154,7 @@ class WishlistItemCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: const Color.fromRGBO(0, 0, 0, 0.1),
                                 spreadRadius: 1,
                                 blurRadius: 2,
                               ),
@@ -195,7 +195,7 @@ class WishlistItemCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   // Add to Cart Button
                   SizedBox(
                     width: double.infinity,
