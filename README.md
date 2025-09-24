@@ -191,7 +191,3 @@ void addItem(Product product) {
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
-
-## License
-
-This project is created for educational purposes and assessment.

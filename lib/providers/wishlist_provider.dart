@@ -7,6 +7,11 @@ class WishlistProvider with ChangeNotifier {
   final List<Product> _items = [];
   static const String _wishlistKey = 'wishlist_items';
 
+  WishlistProvider() {
+    // Load persisted wishlist when provider is initialized
+    loadWishlist();
+  }
+
   List<Product> get items => List.unmodifiable(_items);
 
   int get itemCount => _items.length;
