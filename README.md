@@ -69,125 +69,122 @@ lib/
 - **shared_preferences**: ^2.2.3 - Local storage for wishlist
 - **cupertino_icons**: ^1.0.8 - iOS style icons
 
-## Setup Instructions
+# Shopping Store - Flutter App
 
-### Prerequisites
-- Flutter SDK (3.8.1 or higher)
-- Dart SDK
-- Android Studio / VS Code
-- Android Emulator or iOS Simulator
+A modern Flutter shopping app with a clean UI, Provider-based state management, and integration with the FakeStore API for demo product data.
 
-### Installation Steps
+## Quick overview
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd store
-   ```
+- Small demo app showcasing: authentication (mock), product catalog from an API, search & category filtering, shopping cart, and a wishlist with persistence using SharedPreferences.
+- Built with Flutter and Provider for state management.
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+## Features
 
-3. **Run the app**
-   ```bash
-   flutter run
-   ```
+- Authentication (mock login for demo)
+- Product catalog fetched from FakeStore API
+- Search and category filtering
+- Shopping cart with quantity management and real-time totals
+- Wishlist saved using SharedPreferences (persists across app restarts)
+- Material 3 inspired UI and responsive layouts
 
-### Demo Credentials
-- **Email**: `test@test.com`
-- **Password**: `123456`
+## Project structure
 
-## API Integration
-
-The app integrates with [FakeStore API](https://fakestoreapi.com/) for product data:
-
-- **Products Endpoint**: `https://fakestoreapi.com/products`
-- **Categories Endpoint**: `https://fakestoreapi.com/products/categories`
-- **Single Product**: `https://fakestoreapi.com/products/{id}`
-
-## State Management Architecture
-
-### Provider Pattern
-- **AuthProvider**: Manages user authentication state
-- **CartProvider**: Handles shopping cart operations and state
-- **WishlistProvider**: Manages wishlist with persistent storage
-
-### Data Flow
-1. **API Service** fetches data from external API
-2. **Providers** manage application state
-3. **Screens** consume state via Consumer widgets
-4. **Widgets** display data and handle user interactions
-
-## Key Features Implementation
-
-### Mock Authentication
-```dart
-// Only accepts specific credentials
-if (email == 'test@test.com' && password == '123456') {
-  _isAuthenticated = true;
-  return true;
-}
+```
+lib/
+├── main.dart                 # App entry point with providers setup
+├── models/                   # Data models (product, cart item)
+├── providers/                # Provider classes (auth, cart, wishlist)
+├── screens/                  # Screens (login, home, cart, wishlist, product detail)
+├── services/                 # API integration and helpers
+└── widgets/                  # Reusable widgets (e.g. product card)
 ```
 
-### Persistent Wishlist
-```dart
-// Saves to SharedPreferences
-final wishlistJson = json.encode(_items.map((item) => item.toJson()).toList());
-await prefs.setString(_wishlistKey, wishlistJson);
+## Requirements
+
+- Flutter SDK (recommended: stable channel, 3.8+)
+- Dart (bundled with Flutter)
+- Android Studio or VS Code (optional)
+
+## Setup & run (Windows / Bash)
+
+1. Clone the repo and enter the folder
+
+```bash
+git clone <repository-url>
+cd store
 ```
 
-### Real-time Cart Updates
-```dart
-// Provider notifies listeners on state changes
-void addItem(Product product) {
-  // Add logic
-  notifyListeners(); // Updates UI automatically
-}
+2. Install dependencies
+
+```bash
+flutter pub get
 ```
 
-## Testing the App
+3. Run the app on a connected device or emulator
 
-1. **Login**: Use the demo credentials provided
-2. **Browse Products**: Scroll through the product grid
-3. **Search**: Use the search bar to find specific products
-4. **Filter**: Select categories to filter products
-5. **Add to Cart**: Tap "Add to Cart" on any product
-6. **Wishlist**: Tap the heart icon to add/remove favorites
-7. **Cart Management**: View cart, update quantities, remove items
-8. **Persistent Wishlist**: Close and reopen app to verify wishlist persistence
+```bash
+flutter run
+```
+
+To build a release APK
+
+```bash
+flutter build apk --release
+```
+
+## Demo credentials
+
+- Email: `test@test.com`
+- Password: `123456`
+
+## API
+
+This project uses the FakeStore API for demo data: https://fakestoreapi.com
+
+Key endpoints used:
+
+- /products
+- /products/categories
+- /products/{id}
+
+## Testing the app (manual)
+
+1. Launch the app and sign in with the demo credentials
+2. Browse, search and filter products
+3. Add items to cart and adjust quantities
+4. Add/remove items to wishlist and restart the app to confirm persistence
 
 ## Troubleshooting
 
-### Common Issues
+- If you hit build issues, try:
 
-1. **API Connection Issues**
-   - Check internet connection
-   - Verify API endpoint accessibility
+```bash
+flutter clean
+flutter pub get
+```
 
-2. **Build Issues**
-   - Run `flutter clean` then `flutter pub get`
-   - Ensure Flutter SDK is up to date
+- If the API isn't reachable, check your internet connection or try again later — FakeStore is a free demo API and may occasionally be slow.
 
-3. **SharedPreferences Issues**
-   - Clear app data if wishlist doesn't persist
-   - Check device storage permissions
+## Future improvements
 
-## Future Enhancements
-
-- User registration and real authentication
-- Product details screen
-- Order history
-- Payment integration
-- Push notifications
-- Offline support
-- Product reviews and ratings
+- Real authentication & backend
+- Order checkout flow and payment integration
+- Offline support & caching
+- Unit and widget tests
 
 ## Contributing
 
+Contributions are welcome. Typical workflow:
+
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. Make changes and add tests
+4. Open a pull request
+
+## License
+
+This repository does not include a license file. Add a LICENSE if you want to specify reuse terms.
+
+---
+
+If you'd like, I can add a small CONTRIBUTING.md, a LICENSE file, or update package versions in `pubspec.yaml`. Tell me which next.
