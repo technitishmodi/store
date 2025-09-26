@@ -18,7 +18,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
@@ -27,9 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = 'All';
   List<String> _categories = ['All'];
 
+  AnimationController? _controller;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
     _loadData();
   }
 
@@ -52,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
 
+  _controller?.forward();
       await Provider.of<WishlistProvider>(context, listen: false).loadWishlist();
     } catch (e) {
       if (!mounted) return;
@@ -87,24 +95,22 @@ class _HomeScreenState extends State<HomeScreen> {
     _filterProducts();
   }
 
-  // ignore: unused_element
-  void _logout() {
-    Provider.of<AuthProvider>(context, listen: false).logout();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
-  // Profile screen navigation replaced the modal sheet; kept for reference.
-
+  // 🏗️ BUILD
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
+      extendBodyBehindAppBar: false,
       backgroundColor: theme.colorScheme.background,
       appBar: PreferredSize(
-        // reduced height for a more compact UI
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(68),
         child: AppBar(
           flexibleSpace: Container(
             decoration: BoxDecoration(
@@ -118,187 +124,165 @@ class _HomeScreenState extends State<HomeScreen> {
           title: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+              padding: const EdgeInsets.only(left: 12.0),
               child: Text(
                 "Shopping Store",
-                style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onPrimary,
+                ),
               ),
             ),
           ),
           centerTitle: false,
-          titleSpacing: 6,
-          elevation: 3,
-          shadowColor: Colors.black.withOpacity(0.08),
-          // slightly smaller corner radius to match compact style
+          titleSpacing: 8,
+          elevation: 4,
+          shadowColor: Colors.black.withOpacity(0.12),
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
           ),
           actions: [
-          // Wishlist
-          Consumer<WishlistProvider>(
-            builder: (context, wishlistProvider, child) {
-              return _buildBadgeIcon(
+            _buildBadgeIcon(
+              context,
+              icon: Icons.favorite_rounded,
+              count: context.watch<WishlistProvider>().itemCount,
+              onTap: () => Navigator.push(
                 context,
-                icon: Icons.favorite_rounded,
-                count: wishlistProvider.itemCount,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const WishlistScreen()),
-                ),
-              );
-            },
-          ),
-          // Cart
-          Consumer<CartProvider>(
-            builder: (context, cartProvider, child) {
-              return _buildBadgeIcon(
+                MaterialPageRoute(builder: (_) => const WishlistScreen()),
+              ),
+              iconColor: theme.colorScheme.onPrimary,
+            ),
+            _buildBadgeIcon(
+              context,
+              icon: Icons.shopping_bag_rounded,
+              count: context.watch<CartProvider>().itemCount,
+              onTap: () => Navigator.push(
                 context,
-                icon: Icons.shopping_bag_rounded,
-                count: cartProvider.itemCount,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                ),
-              );
-            },
-          ),
-          // Profile avatar (replaces logout icon)
-          Consumer<AuthProvider>(
-            builder: (context, auth, child) {
-              final email = auth.userEmail ?? 'Guest';
-              final initials = email.isNotEmpty ? email[0].toUpperCase() : 'G';
-              return Padding(
-                padding: const EdgeInsets.only(right: 10.0),
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CartScreen()),
+              ),
+              iconColor: theme.colorScheme.onPrimary,
+            ),
+            Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                final initials = (auth.userEmail ?? "G")[0].toUpperCase();
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   ),
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: theme.colorScheme.onPrimaryContainer.withOpacity(0.12),
-                    child: Text(initials, style: TextStyle(color: theme.colorScheme.onPrimary, fontSize: 12)),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.15),
+                      child: Text(initials,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onPrimary)),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
-          ),
+                );
+              },
+            ),
+          ],
         ),
+      ),
+
+      // 🌟 Body
       body: Column(
         children: [
-          // 🔍 Search + Filter
+          // 🔍 Floating Search Bar
           Container(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: TextField(
-                          onChanged: _onSearchChanged,
-                          decoration: InputDecoration(
-                            hintText: "Search products...",
-                            prefixIcon: Icon(Icons.search_rounded, color: theme.colorScheme.onSurfaceVariant),
-                            filled: false,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.tune_rounded, color: theme.colorScheme.secondary),
-                        onPressed: () {},
-                      ),
-                    )
-                  ],
+            // body is already positioned below the AppBar, so don't add status-bar inset again
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            child: Material(
+              elevation: 6,
+              shadowColor: Colors.black26,
+              borderRadius: BorderRadius.circular(28),
+              child: TextField(
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: "Search products...",
+                  prefixIcon:
+                      Icon(Icons.search, color: theme.colorScheme.primary),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 ),
-                const SizedBox(height: 12),
-                // Category Chips with pill style
-                SizedBox(
-                  height: 38,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = category == _selectedCategory;
-                      return GestureDetector(
-                        onTap: () => _onCategoryChanged(category),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                              color: isSelected ? theme.colorScheme.primary.withOpacity(0.9) : theme.colorScheme.outline.withOpacity(0.06),
-                            ),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
-          // 🛍️ Products Grid
+          // 🌈 Category Chips
+          SizedBox(
+            height: 46,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: _categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final cat = _categories[i];
+                final selected = cat == _selectedCategory;
+                return AnimatedScale(
+                  scale: selected ? 1.05 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: ChoiceChip(
+                    label: Text(cat),
+                    selected: selected,
+                    labelStyle: TextStyle(
+                        color: selected
+                            ? theme.colorScheme.onPrimary
+                            : theme.colorScheme.onSurface),
+                    selectedColor: theme.colorScheme.primary,
+                    backgroundColor: theme.colorScheme.surface,
+                    onSelected: (_) => _onCategoryChanged(cat),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 🛍️ Products
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: theme.colorScheme.secondary))
+                ? _buildShimmerLoader(theme)
                 : _error != null
                     ? _buildErrorState(theme)
                     : _filteredProducts.isEmpty
                         ? _buildEmptyState(theme)
                         : RefreshIndicator(
-                            color: theme.colorScheme.secondary,
                             onRefresh: _loadData,
+                            color: theme.colorScheme.primary,
                             child: GridView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 0.66,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
+                                childAspectRatio: 0.72,
                               ),
                               itemCount: _filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                return ProductCard(product: _filteredProducts[index]);
+                              itemBuilder: (ctx, i) {
+                                final animation = _controller == null
+                                    ? AlwaysStoppedAnimation<double>(1.0)
+                                    : CurvedAnimation(
+                                        parent: _controller!,
+                                        curve: Interval(
+                                          _products.isEmpty ? 0.0 : (i / _products.length),
+                                          1.0,
+                                          curve: Curves.easeOut,
+                                        ),
+                                      );
+
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: ScaleTransition(
+                                    scale: animation,
+                                    child: ProductCard(product: _filteredProducts[i]),
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -308,68 +292,96 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // 🎯 Modern Badge Icon
   Widget _buildBadgeIcon(BuildContext context,
-      {required IconData icon, required int count, required VoidCallback onTap}) {
+      {required IconData icon,
+      required int count,
+      required VoidCallback onTap,
+      Color? iconColor}) {
     final theme = Theme.of(context);
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         IconButton(
+          icon: Icon(icon, color: iconColor ?? theme.colorScheme.primary, size: 26),
           onPressed: onTap,
-          icon: Icon(icon, size: 26, color: theme.colorScheme.onPrimaryContainer),
         ),
         if (count > 0)
           Positioned(
-            right: 6,
+            right: 4,
             top: 6,
-            child: CircleAvatar(
-              radius: 9,
-              backgroundColor: theme.colorScheme.error,
-              child: Text(
-                "$count",
-                style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error,
+                shape: BoxShape.circle,
               ),
+              child: Text("$count",
+                  style: const TextStyle(
+                      fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           )
       ],
     );
   }
 
-  Widget _buildErrorState(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline_rounded, size: 80, color: theme.colorScheme.error),
-          const SizedBox(height: 16),
-          Text("Failed to load products", style: theme.textTheme.titleLarge),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            onPressed: _loadData,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text("Retry"),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          )
-        ],
+  // 🌟 Shimmer Loader
+  Widget _buildShimmerLoader(ThemeData theme) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 6,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+        childAspectRatio: 0.72,
+      ),
+      itemBuilder: (_, __) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(20),
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 80, color: theme.colorScheme.outline),
-          const SizedBox(height: 16),
-          Text("No products found", style: theme.textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text("Try adjusting your search or filters",
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        ],
-      ),
-    );
-  }
+  Widget _buildErrorState(ThemeData theme) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 80, color: theme.colorScheme.error),
+            const SizedBox(height: 16),
+            Text("Oops! Something went wrong",
+                style: theme.textTheme.titleLarge),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text("Retry"),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildEmptyState(ThemeData theme) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 80, color: theme.colorScheme.outline),
+            const SizedBox(height: 16),
+            Text("No products found",
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text("Try adjusting your search or filters",
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ],
+        ),
+      );
 }

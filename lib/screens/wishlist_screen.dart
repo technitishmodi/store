@@ -9,46 +9,88 @@ class WishlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wishlist'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          Consumer<WishlistProvider>(
-            builder: (context, wishlistProvider, child) {
-              if (wishlistProvider.items.isNotEmpty) {
-                return TextButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Clear Wishlist'),
-                        content: const Text('Are you sure you want to remove all items from your wishlist?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              wishlistProvider.clearWishlist();
-                              Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Wishlist cleared')),
-                              );
-                            },
-                            child: const Text('Clear'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  child: const Text('Clear All'),
-                );
-              }
-              return const SizedBox.shrink();
-            },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.9)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
           ),
-        ],
+          // keep the default back button when this screen is pushed
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Text(
+                'Wishlist',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+            ),
+          ),
+          centerTitle: false,
+          titleSpacing: 8,
+          elevation: 4,
+          shadowColor: Colors.black.withOpacity(0.12),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ),
+          actions: [
+            Consumer<WishlistProvider>(
+              builder: (context, wishlistProvider, child) {
+                if (wishlistProvider.items.isNotEmpty) {
+                  return TextButton(
+                    style: TextButton.styleFrom(
+                      // make the button compact so it fits inside the AppBar actions
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Clear Wishlist'),
+                          content: const Text('Are you sure you want to remove all items from your wishlist?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                wishlistProvider.clearWishlist();
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Wishlist cleared')),
+                                );
+                              },
+                              child: const Text('Clear'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Text('Clear All', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
       ),
       body: Consumer<WishlistProvider>(
         builder: (context, wishlistProvider, child) {
@@ -83,9 +125,10 @@ class WishlistScreen extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              // Make items slightly squarer (higher aspect ratio) so each card has
-              // a bit more width relative to height and less chance of overflow.
-              childAspectRatio: 0.9,
+              // Reduce aspect ratio (width/height) so each tile is slightly
+              // taller and gives the ProductCard more vertical room to avoid
+              // tiny RenderFlex overflows in compact layouts.
+              childAspectRatio: 0.82,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
@@ -101,5 +144,3 @@ class WishlistScreen extends StatelessWidget {
     );
   }
 }
-
-// Reusing `ProductCard` for wishlist items; no custom card needed here.
