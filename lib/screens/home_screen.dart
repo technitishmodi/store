@@ -103,7 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(68),
+        // reduced height for a more compact UI
+        preferredSize: const Size.fromHeight(56),
         child: AppBar(
           flexibleSpace: Container(
             decoration: BoxDecoration(
@@ -117,16 +118,20 @@ class _HomeScreenState extends State<HomeScreen> {
           title: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: EdgeInsets.only(left: 12.0),
-              child: const Text("Shopping Store"),
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                "Shopping Store",
+                style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary),
+              ),
             ),
           ),
           centerTitle: false,
-          titleSpacing: 8,
-          elevation: 4,
-          shadowColor: Colors.black.withOpacity(0.12),
+          titleSpacing: 6,
+          elevation: 3,
+          shadowColor: Colors.black.withOpacity(0.08),
+          // slightly smaller corner radius to match compact style
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
           ),
           actions: [
           // Wishlist
@@ -161,15 +166,15 @@ class _HomeScreenState extends State<HomeScreen> {
               final email = auth.userEmail ?? 'Guest';
               final initials = email.isNotEmpty ? email[0].toUpperCase() : 'G';
               return Padding(
-                padding: const EdgeInsets.only(right: 12.0),
+                padding: const EdgeInsets.only(right: 10.0),
                 child: GestureDetector(
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   ),
                   child: CircleAvatar(
-                    radius: 18,
+                    radius: 16,
                     backgroundColor: theme.colorScheme.onPrimaryContainer.withOpacity(0.12),
-                    child: Text(initials, style: TextStyle(color: theme.colorScheme.onPrimary)),
+                    child: Text(initials, style: TextStyle(color: theme.colorScheme.onPrimary, fontSize: 12)),
                   ),
                 ),
               );
@@ -182,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // 🔍 Search + Filter
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -208,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             hintText: "Search products...",
                             prefixIcon: Icon(Icons.search_rounded, color: theme.colorScheme.onSurfaceVariant),
                             filled: false,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide: BorderSide.none,
@@ -232,10 +237,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 // Category Chips with pill style
                 SizedBox(
-                  height: 44,
+                  height: 38,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -248,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () => _onCategoryChanged(category),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 220),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(22),

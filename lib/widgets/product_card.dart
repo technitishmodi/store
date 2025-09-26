@@ -73,8 +73,8 @@ class _ProductCardState extends State<ProductCard> {
                   // Image Section
                   _buildImageSection(context, colorScheme),
 
-                  // Flexible Details Section
-                  Flexible(
+                  // Flexible Details Section - FIXED: Changed from Flexible to Expanded
+                  Expanded(
                     child: _buildProductDetails(context, theme),
                   ),
                 ],
@@ -113,10 +113,6 @@ class _ProductCardState extends State<ProductCard> {
             ),
           ),
 
-          // Discount Tag (if applicable)
-          // Product model does not define a `discount` field; remove the discount badge or add the field to the model.
-          // (No discount badge is shown by default.)
-
           // Wishlist Button
           Positioned(
             right: 8,
@@ -136,64 +132,57 @@ class _ProductCardState extends State<ProductCard> {
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // CHANGED: Better space distribution
+          mainAxisSize: MainAxisSize.max, // CHANGED: Use all available space
           children: [
-            // Top group
-            Flexible(
-              fit: FlexFit.tight,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Category chip with modern styling - removed to save space
+            // Top group - FIXED: Removed the problematic Flexible with FlexFit.tight
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Product title with modern typography (smaller in compact)
+                Text(
+                  widget.product.title,
+                  style: (compact
+                          ? theme.textTheme.bodySmall
+                          : theme.textTheme.titleSmall)
+                      ?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    height: 1.1,
+                    letterSpacing: 0,
+                  ),
+                  maxLines: compact ? 1 : 2, // CHANGED: Allow 2 lines when not compact
+                  overflow: TextOverflow.ellipsis,
+                ),
 
-                  // Product title with modern typography (smaller in compact)
-                  Text(
-                    widget.product.title,
-                    style: (compact
-                            ? theme.textTheme.bodySmall
-                            : theme.textTheme.titleSmall)
-                        ?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      height: 1.1,
-                      letterSpacing: 0,
+                SizedBox(height: compact ? 2 : 4),
+
+                // Price and Rating with modern styling
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    // Price with modern typography
+                    Text(
+                      '\$${widget.product.price.toStringAsFixed(2)}',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  SizedBox(height: compact ? 2 : 4),
-
-                  // Price and Rating with modern styling
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      // Price with modern typography
-                      Text(
-                        '\$${widget.product.price.toStringAsFixed(2)}',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      SizedBox(
-                        height: compact ? 14 : 20,
-                        child: _buildRatingChip(theme),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    SizedBox(
+                      height: compact ? 14 : 20,
+                      child: _buildRatingChip(theme),
+                    ),
+                  ],
+                ),
+              ],
             ),
 
-            const SizedBox(height: 4),
-
-            // Add to Cart Button with modern styling
+            // Add to Cart Button with modern styling - This will be pushed to bottom
             SizedBox(
-              height: compact ? 32 : 36,
+              height: compact ? 28 : 32, // CHANGED: Slightly smaller button
               width: double.infinity,
               child: _buildAddToCartButton(context),
             ),
@@ -208,7 +197,7 @@ class _ProductCardState extends State<ProductCard> {
     
     return Consumer<WishlistProvider>(
       builder: (context, wishlistProvider, _) {
-  final isInWishlist = wishlistProvider.isInWishlist(widget.product.id);
+        final isInWishlist = wishlistProvider.isInWishlist(widget.product.id);
 
         return Material(
           color: Colors.transparent,
@@ -283,14 +272,14 @@ class _ProductCardState extends State<ProductCard> {
     
     return Consumer<CartProvider>(
       builder: (context, cartProvider, _) {
-  final isInCart = cartProvider.isInCart(widget.product.id);
-  final quantity = cartProvider.getQuantity(widget.product.id);
+        final isInCart = cartProvider.isInCart(widget.product.id);
+        final quantity = cartProvider.getQuantity(widget.product.id);
 
         return ElevatedButton(
           onPressed: () => _addToCart(context, cartProvider),
           style: ElevatedButton.styleFrom(
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12), // CHANGED: Reduced padding
             backgroundColor: isInCart
                 ? theme.colorScheme.secondary
                 : theme.colorScheme.primary,
@@ -301,17 +290,22 @@ class _ProductCardState extends State<ProductCard> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // CHANGED: Don't force full width
             children: [
               Icon(
                 isInCart ? Icons.shopping_bag : Icons.add_shopping_cart_outlined,
-                size: 18,
+                size: 16, // CHANGED: Slightly smaller icon
               ),
-              const SizedBox(width: 8),
-              Text(
-                isInCart ? 'In Cart ($quantity)' : 'Add to Cart',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 6), // CHANGED: Reduced spacing
+              Flexible( // CHANGED: Added Flexible to prevent overflow
+                child: Text(
+                  isInCart ? 'In Cart ($quantity)' : 'Add to Cart',
+                  style: theme.textTheme.labelSmall?.copyWith( // CHANGED: Smaller text
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -368,14 +362,14 @@ class _ProductCardState extends State<ProductCard> {
   void _navigateToProductDetail(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-  builder: (context) => ProductDetailScreen(product: widget.product),
+        builder: (context) => ProductDetailScreen(product: widget.product),
       ),
     );
   }
 
   void _toggleWishlist(
       BuildContext context, WishlistProvider wishlistProvider, bool wasInWishlist) {
-  wishlistProvider.toggleWishlist(widget.product);
+    wishlistProvider.toggleWishlist(widget.product);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -394,7 +388,7 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   void _addToCart(BuildContext context, CartProvider cartProvider) {
-  cartProvider.addItem(widget.product);
+    cartProvider.addItem(widget.product);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
